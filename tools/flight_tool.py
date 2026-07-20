@@ -54,37 +54,6 @@ COUNTRY_ALIASES = {
     "france": "FR",
     "italy": "IT",
     "spain": "ES",
-    "美国": "US",
-    "美利坚": "US",
-    "英国": "GB",
-    "联合王国": "GB",
-    "英格兰": "GB",
-    "阿联酋": "AE",
-    "迪拜": "AE",
-    "韩国": "KR",
-    "南韩": "KR",
-    "俄罗斯": "RU",
-    "越南": "VN",
-    "孟加拉": "BD",
-    "孟加拉国": "BD",
-    "印度": "IN",
-    "日本": "JP",
-    "中国": "CN",
-    "新加坡": "SG",
-    "马来西亚": "MY",
-    "泰国": "TH",
-    "印度尼西亚": "ID",
-    "尼泊尔": "NP",
-    "卡塔尔": "QA",
-    "沙特阿拉伯": "SA",
-    "沙特": "SA",
-    "土耳其": "TR",
-    "加拿大": "CA",
-    "澳大利亚": "AU",
-    "德国": "DE",
-    "法国": "FR",
-    "意大利": "IT",
-    "西班牙": "ES",
 }
 
 
@@ -155,10 +124,7 @@ def clean_text(text: str) -> str:
     text = re.sub(r"\s+", " ", text)
     stop_words = ["flight", "flights", "ticket", "tickets", "trip", "travel",
         "plan", "complete", "days", "day", "including", "hotel",
-        "hotels", "sightseeing", "under", "budget", "info", "information", 
-        "航班", "飞机","机票","票","旅行","旅游","出行","行程","计划","攻略",
-        "酒店","住宿","宾馆","景点","观光","预算","价格","多少钱","查询",
-        "查一下","帮我","请问","我要","想要","需要","安排","路线","信息",]
+        "hotels", "sightseeing", "under", "budget", "info", "information"]
 
     words = [
         w for w in text.split()
@@ -459,12 +425,23 @@ def parse_route(query: str):
 
     # Pattern: flights from X
     match = re.search(r"\bfrom\s+(.+?)(?:[.!?]|$)", q_lower)
-
+    
     if match:
         origin_text = match.group(1)
         dep_iata = resolve_location_to_iata(origin_text)
-        return dep_iata, None
-
+    
+        # 尝试从全文再找一个不同的地点作为目的地
+        mentions = find_location_mentions(q)
+    
+        arr_iata = None
+        for m in mentions:
+            code = resolve_location_to_iata(m)
+            if code and code != dep_iata:
+                arr_iata = code
+                break
+    
+        return dep_iata, arr_iata
+    
     # Pattern: flights to X
     match = re.search(r"\bto\s+(.+?)(?:[.!?]|$)", q_lower)
 
@@ -577,6 +554,9 @@ def search_flights(query: str, limit: int = 10):
         )
 
     dep_iata, arr_iata = parse_route(query)
+    print(dep_iata)
+    print(arr_iata)
+
     # 构造 AviationStack API 请求参数
     params = {
         "access_key": API_KEY,
@@ -591,7 +571,7 @@ def search_flights(query: str, limit: int = 10):
 
     try:
         # 调用 AviationStack 获取实时航班数据
-        response = requests.get(BASE_URL, params=params, timeout=30)
+        response = requests.get(BASE_URL, params=params, timeout=50)
         # 随后 Requests 自动拼接 URL，会自动变成：
         # https://api.aviationstack.com/v1/flights?
         # access_key=xxxx
