@@ -87,6 +87,18 @@ COUNTRY_MAIN_AIRPORT = {
 
 
 CITY_MAIN_AIRPORT = {
+        # China
+    "beijing": "PEK",
+    "shanghai": "PVG",
+    "guangzhou": "CAN",
+    "shenzhen": "SZX",
+    "chengdu": "TFU",
+    "hangzhou": "HGH",
+    "xian": "XIY",
+    "wuhan": "WUH",
+    "nanjing": "NKG",
+    "qingdao": "TAO",
+    "xiamen": "XMN",
     "dhaka": "DAC",
     "delhi": "DEL",
     "new delhi": "DEL",
