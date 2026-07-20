@@ -17,14 +17,12 @@ const translations = {
     japanTrip: "🇯🇵 Japan Trip",
     dubaiTrip: "🇦🇪 Dubai Trip",
     thailandTrip: "🇹🇭 Thailand Trip",
-    globalFlights: "🌍 Global Flights",
     japanPrompt:
       "Plan a complete 7 days Japan trip from Bangladesh including flights, hotels and sightseeing under 2 lakhs.",
     dubaiPrompt:
       "Plan a 5 days Dubai trip from Dhaka with flights, hotels and sightseeing.",
     thailandPrompt:
       "Plan a 7 days Thailand trip from Bangladesh with budget hotels and sightseeing.",
-    globalPrompt: "Give me all country flight info.",
     resultTitle: "Your AI Travel Plan",
     threadLabel: "Thread ID:",
     copy: "Copy",
@@ -54,12 +52,10 @@ const translations = {
     japanTrip: "🇯🇵 日本之旅",
     dubaiTrip: "KR 韩国之旅",
     thailandTrip: "🇹🇭 泰国之旅",
-    globalFlights: "🌍 全球航班",
     japanPrompt:
       "规划一个7天日本之旅，从北京出发，含航班、酒店和观光，预算2万以内。",
     dubaiPrompt: "规划一个5天韩国之旅，从上海出发，含航班、酒店和观光。",
     thailandPrompt: "规划一个7天泰国之旅，从上海出发，含航班、酒店和观光。",
-    globalPrompt: "给我所有国家航班信息。",
     resultTitle: "您的AI旅行计划",
     threadLabel: "会话ID：",
     copy: "复制",
