@@ -228,7 +228,9 @@ def postprocess_agent(state: TravelState):
               {answer}
               """
 
-    translated = llm.invoke([HumanMessage(content=prompt)])
+    translated = llm.invoke([
+            SystemMessage(content="You are a professional travel translator. Translate English travel content into fluent and accurate Chinese."),
+              HumanMessage(content=prompt)])
 
     return {
         "messages": [translated],
