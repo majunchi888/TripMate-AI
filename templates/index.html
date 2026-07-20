@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>TripMate AI</title>
+
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+
+  <body>
+    <div class="page-bg">
+      <div class="gradient-circle circle-1"></div>
+      <div class="gradient-circle circle-2"></div>
+      <div class="gradient-circle circle-3"></div>
+    </div>
+
+    <!-- Language Toggle -->
+    <div class="lang-toggle">
+      <button
+        class="lang-btn active"
+        data-lang="zh"
+        onclick="setLanguage('zh')"
+      >
+        Chinese
+      </button>
+      <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">
+        English
+      </button>
+    </div>
+
+    <main class="app-container">
+      <section class="hero-section">
+        <div class="badge" data-i18n="badge">
+          ✈️ TripMate AI — 基于LangGraph的多智能体旅行规划器
+        </div>
+
+        <h1 data-i18n="heroTitle">用AI规划您的完美旅行</h1>
+
+        <p data-i18n="heroDesc">
+          使用多智能体LangGraph系统，搜索航班、发现酒店并生成完整的旅行行程。
+        </p>
+      </section>
+
+      <section class="planner-card">
+        <div class="card-header">
+          <div>
+            <h2 data-i18n="plannerTitle">您想去哪里？</h2>
+            <p data-i18n="plannerSubtitle">
+              示例：规划一个北京到日本之旅，含航班、酒店和观光，预算2万以内。
+            </p>
+          </div>
+
+          <div class="status-pill">
+            <span class="status-dot"></span>
+            <span data-i18n="online">在线</span>
+          </div>
+        </div>
+
+        <div class="input-area">
+          <textarea
+            id="userInput"
+            placeholder="规划一个北京到日本之旅，含航班、酒店和观光，预算2万以内..."
+          ></textarea>
+
+          <button id="sendBtn" onclick="sendMessage()">
+            <span id="btnText" data-i18n="generateBtn">生成计划</span>
+            <span id="btnLoader" class="loader hidden"></span>
+          </button>
+        </div>
+
+        <div class="quick-prompts">
+          <button data-i18n="japanTrip" data-prompt-key="japanPrompt">
+            🇯🇵 日本之旅
+          </button>
+
+          <button data-i18n="dubaiTrip" data-prompt-key="dubaiPrompt">
+            🇦🇪 韩国之旅
+          </button>
+
+          <button data-i18n="thailandTrip" data-prompt-key="thailandPrompt">
+            🇹🇭 泰国之旅
+          </button>
+
+          <button data-i18n="globalFlights" data-prompt-key="globalPrompt">
+            🌍 全球航班
+          </button>
+        </div>
+      </section>
+
+      <section id="resultSection" class="result-section hidden">
+        <div class="result-header">
+          <div>
+            <h2 data-i18n="resultTitle">您的AI旅行计划</h2>
+            <p id="threadInfo">会话ID：-</p>
+          </div>
+
+          <div class="result-actions">
+            <button class="copy-btn" onclick="copyResult()" data-i18n="copy">
+              复制
+            </button>
+
+            <button
+              class="download-btn"
+              onclick="downloadPDF()"
+              data-i18n="downloadPDF"
+            >
+              下载PDF
+            </button>
+          </div>
+        </div>
+
+        <div id="pdfContent" class="pdf-content">
+          <h1 class="pdf-title">AI Travel Plan</h1>
+          <div id="resultBox" class="result-box"></div>
+        </div>
+      </section>
+
+      <section id="errorBox" class="error-box hidden"></section>
+    </main>
+
+    <footer data-i18n="footer">
+      基于 FastAPI、LangGraph、Groq、PostgreSQL、Tavily 和 AviationStack 构建
+    </footer>
+
+    <!-- Markdown Renderer -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- PDF Download Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Your Custom JS -->
+    <script src="/static/script.js"></script>
+  </body>
+</html>

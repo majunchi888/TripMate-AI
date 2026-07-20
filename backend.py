@@ -219,7 +219,11 @@ def postprocess_agent(state: TravelState):
     prompt = f"""
               Translate the following answer into {state["user_language"]}.
               
-              Keep all formatting.
+              Requirements:
+              1. Keep all formatting.
+              2. If the answer contains prices in USD ($), convert them to Chinese Yuan (CNY, ¥).
+              3. Use an approximate exchange rate of 1 USD ≈ 7.2 CNY unless another rate is provided.
+              4. Show only the converted CNY prices, not the original USD prices.
               
               {answer}
               """
