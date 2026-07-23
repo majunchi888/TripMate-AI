@@ -3,7 +3,7 @@
 // ============================================================
 const translations = {
   en: {
-    badge: "✈️ TripMate AI — A Multi-Agent Travel Planner with LangGraph",
+    badge: "✈️ TripMate AI — A Multi-Agent Travel Planner with LangGraph & MCP",
     heroTitle: "Plan Your Perfect Trip with AI",
     heroDesc:
       "Search flights, discover hotels, and generate a complete travel itinerary using a multi-agent LangGraph system.",
@@ -18,9 +18,9 @@ const translations = {
     dubaiTrip: "🇦🇪 Dubai Trip",
     thailandTrip: "🇹🇭 Thailand Trip",
     japanPrompt:
-      "Plan a complete 7 days Japan trip from Bangladesh including flights, hotels and sightseeing under 2 lakhs.",
+      "Plan a complete 7 days Japan trip from China including flights, hotels and sightseeing under 20000 yuan.",
     dubaiPrompt:
-      "Plan a 5 days Dubai trip from Dhaka with flights, hotels and sightseeing.",
+      "Plan a 5 days Dubai trip from Shanghai with flights, hotels and sightseeing.",
     thailandPrompt:
       "Plan a 7 days Thailand trip from Bangladesh with budget hotels and sightseeing.",
     resultTitle: "Your AI Travel Plan",
@@ -38,7 +38,7 @@ const translations = {
     pdfError: "Could not download PDF.",
   },
   zh: {
-    badge: "✈️ TripMate AI — 基于LangGraph的多智能体旅行规划器",
+    badge: "✈️ TripMate AI — 基于LangGraph与MCP的多智能体旅行规划器",
     heroTitle: "用AI规划您的完美旅行",
     heroDesc:
       "使用多智能体LangGraph系统，搜索航班、发现酒店并生成完整的旅行行程。",

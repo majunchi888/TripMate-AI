@@ -11,6 +11,10 @@ from pydantic import BaseModel
 
 from backend import run_travel_agent
 
+# 处理嵌套事件循环，允许多调度线程
+import nest_asyncio
+nest_asyncio.apply()
+
 BASE_DIR = Path(__file__).resolve().parent # app.py 的父目录
 
 app = FastAPI(
