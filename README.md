@@ -27,6 +27,8 @@
 
 ## 技术栈
 
+![alt text](image-4.png)
+
 - Python 3.10+
 - FastAPI
 - Jinja2 + HTML/CSS/JavaScript 前端
