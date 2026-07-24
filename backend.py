@@ -61,7 +61,7 @@ class TravelState(TypedDict):
     hotel_results: str
     weather_results: str
     itinerary: str
-    llm_calls: int
+    llm_calls: Annotated[int, operator.add]
 
 # ===========================================================================
 # preprocess
@@ -106,7 +106,7 @@ def preprocess_agent(state: TravelState):
     return {
         "english_query": english_query,
         "user_language": user_language,
-        "llm_calls": state.get("llm_calls", 0) + 1
+        "llm_calls":  1
     }
 # ===========================================================================
 # Flight Agent
@@ -182,7 +182,7 @@ def flight_agent(state: TravelState):
         "messages": [
                 AIMessage(content="Flight recommendations fetched.")
             ],
-        "llm_calls": state.get("llm_calls", 0) + 1 
+        "llm_calls": 1 
     }
 
 # ===========================================================================
@@ -223,7 +223,7 @@ def weather_agent(state: TravelState):
         "messages": [
                 AIMessage(content="Weather information fetched.")
             ],                   
-        "llm_calls": state.get("llm_calls", 0) + 1
+        "llm_calls": 1
     }
 
 
@@ -256,7 +256,7 @@ def itinerary_agent(state: TravelState):
     return{
             "itinerary": response.content,
             "messages": [response],
-            "llm_calls": state.get("llm_calls", 0) + 1 
+            "llm_calls": 1 
         }
 
 # ===========================================================================
@@ -305,7 +305,7 @@ def final_agent(state: TravelState):
 
     return{
             "messages": [response],
-            "llm_calls": state.get("llm_calls", 0) + 1 
+            "llm_calls": 1 
         }
 
 # ===========================================================================
@@ -335,7 +335,7 @@ def postprocess_agent(state: TravelState):
 
     return {
         "messages": [translated],
-        "llm_calls": state.get("llm_calls", 0) + 1 
+        "llm_calls": 1 
     }        
 
 # ===========================================================================
