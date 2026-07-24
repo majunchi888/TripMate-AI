@@ -352,26 +352,26 @@ graph.add_node("final_agent", final_agent)
 graph.add_node("preprocess_agent", preprocess_agent)
 graph.add_node("postprocess_agent", postprocess_agent)
 
-graph.add_edge(START, "preprocess_agent")
-graph.add_edge("preprocess_agent", "flight_agent")
-graph.add_edge("preprocess_agent", "hotel_agent")
-graph.add_edge("preprocess_agent", "weather_agent")
-graph.add_edge("flight_agent", "itinerary_agent")
-graph.add_edge("hotel_agent", "itinerary_agent")
-graph.add_edge("weather_agent", "itinerary_agent")
-graph.add_edge("itinerary_agent", "final_agent")
-graph.add_edge("final_agent", "postprocess_agent")
-graph.add_edge("postprocess_agent", END)
-
-
 # graph.add_edge(START, "preprocess_agent")
 # graph.add_edge("preprocess_agent", "flight_agent")
-# graph.add_edge("flight_agent", "hotel_agent")
-# graph.add_edge("hotel_agent", "weather_agent")
+# graph.add_edge("preprocess_agent", "hotel_agent")
+# graph.add_edge("preprocess_agent", "weather_agent")
+# graph.add_edge("flight_agent", "itinerary_agent")
+# graph.add_edge("hotel_agent", "itinerary_agent")
 # graph.add_edge("weather_agent", "itinerary_agent")
 # graph.add_edge("itinerary_agent", "final_agent")
 # graph.add_edge("final_agent", "postprocess_agent")
 # graph.add_edge("postprocess_agent", END)
+
+
+graph.add_edge(START, "preprocess_agent")
+graph.add_edge("preprocess_agent", "flight_agent")
+graph.add_edge("flight_agent", "hotel_agent")
+graph.add_edge("hotel_agent", "weather_agent")
+graph.add_edge("weather_agent", "itinerary_agent")
+graph.add_edge("itinerary_agent", "final_agent")
+graph.add_edge("final_agent", "postprocess_agent")
+graph.add_edge("postprocess_agent", END)
 
 # ===========================================================================
 # PostgreSQL Checkpointer
