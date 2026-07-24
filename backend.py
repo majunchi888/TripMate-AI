@@ -188,10 +188,10 @@ def flight_agent(state: TravelState):
 # ===========================================================================
 # Hotel Agent
 
-def hotel_agent(state: TravelState):
+async def hotel_agent(state: TravelState):
     query = f"hotels for {state['english_query']}."
     # hotel_results = tavily_search(query)
-    hotel_results = asyncio.run(tavily_mcp_search(query))
+    hotel_results = await tavily_mcp_search(query)
     print(f"\n\n{hotel_results[:2]}")
 
     return{
