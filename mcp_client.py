@@ -1,4 +1,5 @@
 import os
+import sys
 import asyncio
 from re import search
 import certifi
@@ -38,7 +39,7 @@ client = MultiServerMCPClient(
             },
             "weather": {
                     "transport": "stdio", # local mcp server
-                    "command": r"D:\agent-project\TripMate-AI\.venv\Scripts\python.exe",
+                    "command": sys.executable,
                     # "command": r"C:\Users\MI\AppData\Roaming\uv\python\cpython-3.13.13-windows-x86_64-none\python.exe",
                     "args": [
                         r"D:\agent-project\TripMate-AI\custom_weather_mcp_server.py"
