@@ -31,6 +31,8 @@ client = MultiServerMCPClient(
                     "transport": "stdio", # local mcp server
                     "command": "uvx",
                     "args": [
+                        "--with",
+                        "mcp==1.28.1",
                         "aviationstack-mcp"
                     ],
                     "env": {
@@ -42,7 +44,7 @@ client = MultiServerMCPClient(
                     "command": sys.executable,
                     # "command": r"C:\Users\MI\AppData\Roaming\uv\python\cpython-3.13.13-windows-x86_64-none\python.exe",
                     "args": [
-                        r"D:\agent-project\TripMate-AI\custom_weather_mcp_server.py"
+                        r"D:/agent-project/TripMate-AI/custom_weather_mcp_server.py"
                     ],
                     "env": {
                         "OPENWEATHER_API_KEY": OPENWEATHER_API_KEY
@@ -82,9 +84,11 @@ async def initialize_mcp():
         print(tool.name)
 
     search_tool = next(tool for tool in tools if tool.name == "tavily_search") # 只返回第一个tavily_search tool
-
+  
     aviation_tools = {tool.name: tool for tool in tools if tool.name != "tavily_search"}
     # print(aviation_tools)
+    # print("\n\n")
+    # print(search_tool)
 
 # 调用 tavily_search tool      
 async def tavily_mcp_search(query: str):

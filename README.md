@@ -1,4 +1,4 @@
-# ✈️ TripMate AI — 多代理旅行规划器与 MCP
+# ✈️ TripMate AI — 基于 LangGraph 和 MCP 的多智能体旅行规划 Agent 系统
 
 一个开源的 AI 旅行规划器，它将自然语言旅行需求转换为实用的旅行计划，包括航班建议、酒店推荐、天气信息和逐日行程。该项目使用 LangGraph、LangChain、FastAPI 和 MCP 工具构建多代理工作流。
 

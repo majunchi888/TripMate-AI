@@ -1,3 +1,6 @@
+from colorama import init
+from httpx import get
+
 from tools.tavily_tool import tavily_search
 from tools.flight_tool import search_flights
 from backend import run_travel_agent
@@ -14,7 +17,7 @@ from backend import run_travel_agent
 # print("\n\n FINAL ANSWER:\n", res["answer"])
 
 import asyncio
-from mcp_client import get_all_tools, extract_destination, weather_mcp_search, forecast_mcp_search
+from mcp_client import get_all_tools, extract_destination, weather_mcp_search, forecast_mcp_search, initialize_mcp
 
 
 if __name__ == "__main__":
@@ -25,6 +28,4 @@ if __name__ == "__main__":
     # forecast_data = asyncio.run(forecast_mcp_search("Japan"))
     # print(f"/n{weather_data} /n/n{forecast_data}")
 
-    city = extract_destination("Plan a complete 7 days Japan trip from China including flights, hotels and sightseeing under 20000 yuan.")
-
-    print(city)
+    print(asyncio.run(initialize_mcp()))
