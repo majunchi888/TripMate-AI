@@ -829,7 +829,7 @@ Important:
 - Incorporate the human feedback when revision was requested.
 """
 
-    response = llm.invoke(
+    response = llm_qwen.invoke(
         [
             SystemMessage(
                 content="You are a professional AI travel booking assistant."
@@ -951,20 +951,35 @@ graph.add_edge("guardrail_blocked", END)
 
 # ===========================================================================
 # PostgreSQL Checkpointer
+from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
+from langgraph.checkpoint.postgres import PostgresSaver
+
+
 DATABASE_URL = get_database_url()
 
-_conn = psycopg.connect(
-    DATABASE_URL, 
-    autocommit=True,
-    row_factory=dict_row, # type: ignore
-    prepare_threshold=0,
-    )
 
-checkpointer = PostgresSaver(_conn) # type: ignore
+pool = ConnectionPool(
+    conninfo=DATABASE_URL,
+    min_size=1,
+    max_size=5,
+    kwargs={
+        "autocommit": True,
+        "row_factory": dict_row,
+        "prepare_threshold": 0,
+    },
+)
+
+pool.wait()
+
+checkpointer = PostgresSaver(pool)
 checkpointer.setup()
+
 print("连接数据库成功")
 
-travel_graph = graph.compile(checkpointer)
+travel_graph = graph.compile(
+    checkpointer=checkpointer
+)
 
 # ===========================================================================
 # Function for FastAPI
