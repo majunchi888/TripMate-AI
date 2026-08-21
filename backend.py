@@ -626,6 +626,7 @@ def budget_agent(state: TravelState):
     t0 = time.perf_counter()
 
     prompt = f"""
+use same language as user query.        
 Analyze whether this trip is realistic for the user's budget.
 
 User Query:
