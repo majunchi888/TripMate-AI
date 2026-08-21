@@ -1,7 +1,9 @@
-# Environments
 .venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+__pycache__
+*.pyc
+.git
+.gitignore
+.env
+.env.*
+node_modules
+huggingface_cache

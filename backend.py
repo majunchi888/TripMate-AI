@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import ssl
 import certifi
 from dotenv import load_dotenv
 import time
@@ -30,12 +31,12 @@ from mcp_client import tavily_mcp_search, aviation_mcp_call, forecast_mcp_search
 def get_database_url():
     database_url = os.getenv("DATABASE_URL")
 
-    if not database_url:
-        raise ValueError("DATABASE_URL is missing. Please add your Render PostgresSQL External Database URL in your .env file")
-    # if sslmode is not set, add it
-    if "sslmode=" not in database_url:
-        separator = "&" if "?" in database_url else "?"
-        database_url = f"{database_url}{separator}sslmode=require"
+    # if not database_url:
+    #     raise ValueError("DATABASE_URL is missing. Please add your Render PostgresSQL External Database URL in your .env file")
+    # # if sslmode is not set, add it
+    # if "sslmode=" not in database_url:
+    #     separator = "&" if "?" in database_url else "?"
+    #     database_url = f"{database_url}{separator}sslmode=require"
 
     return database_url
 
@@ -955,9 +956,7 @@ graph.add_edge("guardrail_blocked", END)
 # ===========================================================================
 # PostgreSQL Checkpointer
 from psycopg.rows import dict_row
-from psycopg_pool import ConnectionPool
 from langgraph.checkpoint.postgres import PostgresSaver
-
 
 DATABASE_URL = get_database_url()
 
