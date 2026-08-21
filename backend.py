@@ -711,7 +711,7 @@ Create a clear draft that is ready for human review.
 
     t1 = time.perf_counter()
 
-    response = llm.invoke(
+    response = llm_qwen.invoke(
         [
             SystemMessage(content="You are an expert travel planner."),
             HumanMessage(content=prompt),

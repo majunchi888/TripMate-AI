@@ -1,152 +1,99 @@
-# ✈️ TripMate AI — 基于 LangGraph 和 MCP 的多智能体旅行规划 Agent 系统
+# Multi-Agent-System-using-LangGraph-MCP-Supervisor-Guardrails-HITL
 
-一个开源的 AI 旅行规划器，它将自然语言旅行需求转换为实用的旅行计划，包括航班建议、酒店推荐、天气信息和逐日行程。该项目使用 LangGraph、LangChain、FastAPI 和 MCP 工具构建多代理工作流。
+A demo multi-agent system that uses LangGraph and MCP to implement a travel-planning assistant with a Supervisor, input Guardrails, and Human-In-The-Loop (HITL) approval flows. The project includes a FastAPI frontend, example MCP server, and client helpers to demonstrate how agents, supervisors, and guardrails can be composed into a safe, reviewable planning pipeline.
 
-## 为什么要做这个项目？
+Key ideas:
 
-规划旅行通常需要在多个网站、工具和表格之间切换。该项目将这些环节整合到一个体验中，通过以下内容实现：
+- Multi-agent coordination using LangGraph and MCP
+- Supervisor agent to manage complex workflows
+- Input guardrails to validate user requests
+- Human-in-the-loop approval for generated plans
 
-- 航班搜索代理
-- 酒店调研代理
-- 天气查询代理
-- 行程规划代理
-- 最终响应代理
+Contents
 
-所有代理通过 LangGraph 工作流和 MCP 工具集成进行协调。
+- `app.py`: FastAPI web frontend and API endpoints
+- `backend.py`: core agent orchestration / travel-planner logic
+- `mcp_client.py`: client helpers to interact with the MCP server
+- `custom_weather_mcp_server.py`: example MCP server for weather checks
+- `templates/`, `static/`: frontend UI assets (HTML, JS, CSS)
 
-## 功能
+Features
 
-- ✈️ 使用 AviationStack 进行航班调研
-- 🏨 使用 Tavily 搜索进行酒店建议
-- 🌤 通过自定义 MCP 工具查询天气
-- 🧠 使用 LangGraph 和 MCP 实现多代理编排
-- 📝 生成结构化旅行行程
-- 🌐 基于 FastAPI 的后端和简洁 Web 界面
-- 💾 使用 PostgreSQL 持久化会话状态
-- ⚡ 使用 Groq 生成 LLM 驱动的响应
+- Interactive web UI for sending travel planning prompts
+- Endpoint for drafting travel plans and separate approval endpoint
+- Example MCP server demonstrating domain adapters (weather, checkpoints)
 
-## 技术栈
+Prerequisites
 
-![alt text](image-4.png)
+- Python 3.10+ (recommended)
+- Git (to clone the repo)
+- A virtual environment tool (venv) or similar
 
-- Python 3.10+
-- FastAPI
-- Jinja2 + HTML/CSS/JavaScript 前端
-- LangGraph
-- LangChain
-- Groq LLMs
-- PostgreSQL
-- Tavily API
-- AviationStack API
-- MCP via `langchain-mcp-adapters` 和 `mcp`
+Quick start (Windows)
 
-## MCP 集成说明
+1. Create and activate a virtual environment
 
-项目在多个环节中集成了 MCP：
-
-- `Tavily` 搜索使用远程 MCP 端点：`https://mcp.tavily.com/mcp/`
-- `AviationStack` 使用本地 stdio MCP 命令：`uvx aviationstack-mcp`
-- `Weather` 由本地自定义 MCP 服务器实现，文件位置为 `custom_weather_mcp_server.py`
-
-MCP 客户端定义在 `mcp_client.py`，并提供以下异步辅助函数：
-
-- `tavily_mcp_search`
-- `aviation_mcp_call`
-- `weather_mcp_search`
-- `forecast_mcp_search`
-- `extract_destination`
-
-主旅行工作流位于 `backend.py`，其中航班、酒店和天气代理都会调用这些辅助函数。
-
-## 项目结构
-
-```text
-.
-├── app.py                      # FastAPI 应用入口
-├── backend.py                  # LangGraph 旅行工作流
-├── mcp_client.py               # MCP 客户端与工具集成
-├── custom_weather_mcp_server.py# 本地天气 MCP 服务器
-├── requirements.txt            # Python 依赖
-├── static/                     # 静态前端资源
-├── templates/                  # HTML 模板
-└── tools/                      # 航班和网络搜索集成工具
-```
-
-## 环境准备
-
-在本地运行项目前，请确认以下条件：
-
-- 已安装 Python 3.10 或更高版本
-- PostgreSQL 已启动并可访问
-- 已获取以下 API Key：
-  - Groq
-  - Tavily
-  - AviationStack
-  - OpenWeather
-- 如果使用本地 AviationStack MCP，需安装 `uvx` 或根据需要调整 `mcp_client.py`
-
-## 环境变量
-
-在项目根目录创建 `.env` 文件，并添加如下内容：
-
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/travel_db
-GROQ_API_KEY=your_groq_api_key
-AVIATIONSTACK_API_KEY=your_aviationstack_api_key
-TAVILY_API_KEY=your_tavily_api_key
-OPENWEATHER_API_KEY=your_openweather_api_key
-DEFAULT_ORIGIN_IATA=DAC
-```
-
-> 如果你在 Windows 上运行，建议使用 `.\.venv\Scripts\activate` 激活虚拟环境。
-
-## 安装步骤
-
-```bash
+```powershell
 python -m venv .venv
-source .venv/bin/activate   # Linux / macOS
-.\.venv\Scripts\activate  # Windows
+.venv\Scripts\Activate.ps1    # PowerShell
+```
+
+2. Install dependencies
+
+```powershell
 pip install -r requirements.txt
 ```
 
-## 启动应用
+3. Run the FastAPI app (development)
 
-运行以下命令启动 FastAPI 服务：
-
-```bash
+```powershell
+# option A (run module)
 python app.py
+
+# option B (uvicorn)
+uvicorn app:app --reload --host 127.0.0.1 --port 8000
 ```
 
-在浏览器中打开：
+4. Open the web UI
 
-```text
-http://127.0.0.1:8000/
+Visit http://127.0.0.1:8000 in your browser to use the TripMate frontend.
+
+Running the MCP server (example)
+
+- The repository includes `custom_weather_mcp_server.py` as an example MCP server. Run it in a separate terminal if you want to experiment with custom adapters used by the demo.
+
+```powershell
+# start example MCP server (if needed)
+python custom_weather_mcp_server.py
 ```
 
-## 使用 MCP 工具
+API Endpoints
 
-应用在后台使用 MCP，因此前端无需额外修改。
+- `POST /api/travel` — create or resume a travel planning thread. JSON: `{ "message": "<user prompt>", "thread_id": "optional-thread-id" }`
+- `POST /api/travel/approve` — approve or request revisions for a draft. JSON: `{ "thread_id": "<id>", "approved": true|false, "feedback": "optional" }`
+- `GET /health` — basic health check and features list
 
-如果需要自定义天气 MCP 服务器命令，请编辑 `mcp_client.py`，并将天气工具路径替换为你的本地 Python 环境或其他可执行路径。
+Configuration & environment
 
-## API 接口
+- Secrets and API keys are not included in the repo. Use environment variables or a `.env` file for any required keys consumed by `langgraph`, `langchain`, or other adapters.
 
-- GET `/health` - 健康检查
-- POST `/api/travel` - 提交旅行请求
+Development notes
 
-示例请求：
+- The project keeps synchronous convenience wrappers in `backend.py` while running an async FastAPI server — `nest_asyncio` is applied in `app.py` to allow the sync helpers to call async MCP helpers.
+- Tests are not included; to experiment, interact with the web UI or call the API endpoints directly.
 
-```bash
-curl -X POST http://127.0.0.1:8000/api/travel \
-  -H "Content-Type: application/json" \
-  -d '{"message":"Plan a 3-day trip to Tokyo with a budget of $1200"}'
-```
+Contributing
 
-## 工作流说明
+- Contributions are welcome. Please open issues or pull requests for bug fixes, documentation improvements, or new adapter examples.
 
-1. 用户提交旅行请求
-2. 航班代理使用 MCP 支持的 AviationStack 数据
-3. 酒店代理使用远程 Tavily MCP 搜索
-4. 天气代理调用本地自定义天气 MCP 服务器
-5. 行程代理生成实用旅行计划
-6. 最终结果通过 Web API 返回给用户
+License
+
+- This repository follows the license in the `LICENSE` file.
+
+Acknowledgements
+
+- Built as a demonstration of LangGraph + MCP patterns with supervisor and guardrail concepts.
+
+Contact
+
+- For questions or suggestions, open an issue or contact the repository owner.
