@@ -958,21 +958,14 @@ from langgraph.checkpoint.postgres import PostgresSaver
 
 DATABASE_URL = get_database_url()
 
-
-pool = ConnectionPool(
-    conninfo=DATABASE_URL,
-    min_size=1,
-    max_size=5,
-    kwargs={
-        "autocommit": True,
-        "row_factory": dict_row,
-        "prepare_threshold": 0,
-    },
+_conn = psycopg.connect(
+    DATABASE_URL,
+    autocommit=True,
+    row_factory=dict_row,
+    prepare_threshold=0,
 )
 
-pool.wait()
-
-checkpointer = PostgresSaver(pool)
+checkpointer = PostgresSaver(_conn)
 checkpointer.setup()
 
 print("连接数据库成功")
