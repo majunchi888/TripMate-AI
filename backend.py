@@ -46,7 +46,7 @@ llm = ChatGroq(model = "openai/gpt-oss-120b", api_key = os.getenv("GROQ_API_KEY"
 llm_qwen = ChatOpenAI(
     api_key=os.getenv("ALIYUN_API_KEY"),
     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-    model_name="qwen3.8-max",
+    model_name="qwen3.7-plus",
     temperature=0.2
 )
 # ===========================================================================
