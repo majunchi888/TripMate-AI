@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sys
 import asyncio
 from re import search
@@ -17,6 +18,13 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 AVIATION_STACK_API_KEY = os.getenv("AVIATIONSTACK_API_KEY")
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+BASE_DIR = Path(__file__).resolve().parent
+
+WEATHER_MCP_SERVER = (
+    BASE_DIR
+    / "custom_weather_mcp_server.py"
+)
 
 llm = ChatGroq(model = "openai/gpt-oss-20b", api_key = GROQ_API_KEY) # type: ignore
 
@@ -44,7 +52,7 @@ client = MultiServerMCPClient(
                     "command": sys.executable,
                     # "command": r"C:\Users\MI\AppData\Roaming\uv\python\cpython-3.13.13-windows-x86_64-none\python.exe",
                     "args": [
-                        r"D:/agent-project/TripMate-AI/custom_weather_mcp_server.py"
+                        str(WEATHER_MCP_SERVER)
                     ],
                     "env": {
                         "OPENWEATHER_API_KEY": OPENWEATHER_API_KEY
