@@ -47,7 +47,7 @@ llm_qwen = ChatOpenAI(
     api_key=os.getenv("ALIYUN_API_KEY"),
     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     model_name="qwen3.7-plus",
-    temperature=0.2
+    temperature=0.2,
 )
 # ===========================================================================
 # State
@@ -681,6 +681,7 @@ If exact live prices are unavailable, clearly label estimates as approximate.
 def itinerary_agent(state: TravelState):
 
     t0 = time.perf_counter()
+    print("[ITINERARY] BEFORE LLM", flush=True)
 
     prompt = f"""
 Create a complete travel itinerary.
@@ -709,12 +710,13 @@ Create a clear draft that is ready for human review.
 
     t1 = time.perf_counter()
 
-    response = llm_qwen.invoke(
+    response = llm.invoke(
         [
             SystemMessage(content="You are an expert travel planner."),
             HumanMessage(content=prompt),
         ]
     )
+    print("[ITINERARY] AFTER LLM", flush=True)
 
     t2 = time.perf_counter()
 

@@ -55,7 +55,6 @@ async def home(request: Request):
         context={},
     )
 
-
 @app.post("/api/travel")
 async def travel_planner(request_data: TravelRequest):
     try:
@@ -70,9 +69,18 @@ async def travel_planner(request_data: TravelRequest):
                 },
             )
 
+        print("[API] BEFORE RUN", flush=True)
+
         result = run_travel_agent(
             user_input=user_message,
             thread_id=request_data.thread_id,
+        )
+
+        print("[API] AFTER RUN", flush=True)
+        print(
+            "[API] RESULT KEYS:",
+            list(result.keys()),
+            flush=True,
         )
 
         return JSONResponse(
@@ -83,7 +91,12 @@ async def travel_planner(request_data: TravelRequest):
         )
 
     except Exception as exc:
-        print("ERROR:", exc)
+        import traceback
+
+        print(
+            f"[API ERROR] {type(exc).__name__}: {exc}",
+            flush=True,
+        )
         traceback.print_exc()
 
         return JSONResponse(
