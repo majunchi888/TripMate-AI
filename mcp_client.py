@@ -18,7 +18,7 @@ AVIATION_STACK_API_KEY = os.getenv("AVIATIONSTACK_API_KEY")
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-llm = ChatGroq(model = "llama-3.3-70b-versatile", api_key = GROQ_API_KEY) # type: ignore
+llm = ChatGroq(model = "openai/gpt-oss-20b", api_key = GROQ_API_KEY) # type: ignore
 
 client = MultiServerMCPClient(
     {
@@ -55,11 +55,21 @@ client = MultiServerMCPClient(
 )
 
 async def get_all_tools():
+
     tools = await client.get_tools()
 
     print("\nAVAILABLE MCP TOOLS:\n")
+
     for tool in tools:
-            print(tool.name)
+
+        print("=" * 70)
+        print("Tool:", tool.name)
+        print("Description:", tool.description)
+
+        print("Input schema:")
+        print(tool.args_schema)
+
+        print("=" * 70)
 
 # ===================================================
 # Tavily and Aviationstack tools
@@ -91,14 +101,23 @@ async def initialize_mcp():
     # print(search_tool)
 
 # 调用 tavily_search tool      
-async def tavily_mcp_search(query: str):
+async def tavily_mcp_search(
+    query: str,
+    max_results: int = 5
+):
     await initialize_mcp()
-    result = await search_tool.ainvoke( # type: ignore
-            {
-                "query": query
-            }
+
+    result = await search_tool.ainvoke(
+        {
+            "query": query,
+            "max_results": max_results,
+            "search_depth": "advanced",
+            "topic": "general",
+            "include_raw_content": False,
+        }
     )
-    return result    
+
+    return result
 
 # 调用 Aviationstack tools
 async def aviation_mcp_call(tool_name: str, tool_args: dict = None): # type: ignore
@@ -152,20 +171,7 @@ async def forecast_mcp_search(city: str):
     )
     return result
 
-# ===================================================
-# Destination extractor
-# ===================================================
 
-def extract_destination(query: str):
 
-    prompt = f"""Extract only the destination city or country.
-    
-    Query:
-    {query}
-
-    Return only destination name like "Japan"，""Tokyo".
-    """
-
-    response = llm.invoke(prompt)
-
-    return response.content.strip() # type: ignore
+if __name__ == "__main__": # type: ignore
+    asyncio.run(get_all_tools())

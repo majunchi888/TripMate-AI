@@ -40,7 +40,7 @@
         <h1 data-i18n="heroTitle">用AI规划您的完美旅行</h1>
 
         <p data-i18n="heroDesc">
-          使用多智能体LangGraph系统，搜索航班、发现酒店并生成完整的旅行行程。
+          Supervisor 智能调度专家智能体，安全防护拦截无关请求，并支持人工审批（Human-in-the-Loop）后生成最终行程。
         </p>
       </section>
 
@@ -76,8 +76,8 @@
             🇯🇵 日本之旅
           </button>
 
-          <button data-i18n="dubaiTrip" data-prompt-key="dubaiPrompt">
-            🇦🇪 韩国之旅
+          <button data-i18n="koreaTrip" data-prompt-key="koreaPrompt">
+            🇰🇷 韩国之旅
           </button>
 
           <button data-i18n="thailandTrip" data-prompt-key="thailandPrompt">
@@ -86,11 +86,96 @@
         </div>
       </section>
 
+      <!-- Processing status -->
+      <section id="processingSection" class="processing-card hidden">
+        <span class="loader loader-dark"></span>
+        <span id="processingText" data-i18n="processing"
+          >正在生成您的旅行计划，请稍候…</span>
+      </section>
+
+      <!-- Supervisor plan panel -->
+      <section id="planPanel" class="plan-panel hidden">
+        <div class="plan-header">
+          <div>
+            <h2 data-i18n="planTitle">智能体规划方案</h2>
+            <p data-i18n="planSubtitle">
+              Supervisor 已将您的请求分派给以下专家智能体。
+            </p>
+          </div>
+
+          <div id="guardrailBadge" class="guardrail-badge ok">
+            🛡️ <span data-i18n="guardrailOk">安全防护已通过</span>
+          </div>
+        </div>
+
+        <div class="plan-section-label" data-i18n="agentsLabel">已选专家</div>
+        <div id="agentsRow" class="agents-row"></div>
+
+        <div class="plan-section-label" data-i18n="tripConstraintsLabel">行程约束</div>
+        <div id="constraintsGrid" class="constraints-grid"></div>
+
+        <div id="supervisorNote" class="supervisor-note"></div>
+      </section>
+
+      <!-- Guardrail blocked card -->
+      <section id="blockedCard" class="blocked-card hidden">
+        <h2 data-i18n="blockedTitle">🛡️ 该请求已被拦截</h2>
+
+        <div class="plan-section-label" data-i18n="blockedReason">拦截原因</div>
+        <div id="blockedReason" class="blocked-reason"></div>
+
+        <p class="blocked-hint" data-i18n="blockedHint">
+          TripMate AI 仅支持旅行规划。请尝试询问目的地、航班、酒店、天气、预算或行程相关的内容。
+        </p>
+      </section>
+
+      <!-- Human-in-the-Loop approval card -->
+      <section id="approvalCard" class="approval-card hidden">
+        <div class="approval-header">
+          <div class="approval-icon">👤</div>
+          <div>
+            <h2 data-i18n="approvalTitle">需要人工审批</h2>
+            <p data-i18n="approvalSubtitle">
+              行程草案已生成，请审批。批准后将生成最终方案，或填写反馈让我们为您修改。
+            </p>
+          </div>
+          <div class="approval-badge" data-i18n="reviewBadge">Review</div>
+        </div>
+
+        <div id="approvalDraft" class="approval-draft"></div>
+
+        <textarea
+          id="feedbackInput"
+          class="feedback-input"
+          placeholder="可选：填写修改意见，为您生成更合适的方案..."
+        ></textarea>
+
+        <div class="approval-actions">
+          <button id="reviseBtn" class="btn-revise" onclick="submitApproval(false)">
+            <span id="reviseText" data-i18n="reviseBtn">↩ 请求修改</span>
+            <span id="reviseLoader" class="loader loader-dark hidden"></span>
+          </button>
+
+          <button id="approveBtn" class="btn-approve" onclick="submitApproval(true)">
+            <span id="approveText" data-i18n="approveBtn">✓ 批准</span>
+            <span id="approveLoader" class="loader hidden"></span>
+          </button>
+        </div>
+      </section>
+
       <section id="resultSection" class="result-section hidden">
         <div class="result-header">
           <div>
             <h2 data-i18n="resultTitle">您的AI旅行计划</h2>
-            <p id="threadInfo">会话ID：-</p>
+
+            <div class="result-meta">
+              <span id="resultBadge" class="result-badge hidden"></span>
+              <span id="threadInfo" class="thread">会话ID：-</span>
+              <span class="stat-item">
+                ⚡ <span id="llmCalls">0</span>
+                <span data-i18n="llmCallsLabel">次AI调用</span>
+              </span>
+            </div>
           </div>
 
           <div class="result-actions">

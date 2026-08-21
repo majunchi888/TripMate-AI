@@ -3,8 +3,9 @@ import json
 import os
 import certifi
 from dotenv import load_dotenv
+import time
 
-load_dotenv()
+load_dotenv(override=True)
 
 os.environ["SSL_CERT_FILE"] = certifi.where()
 os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
@@ -21,9 +22,10 @@ from langgraph.types import Command, interrupt
 from langgraph.checkpoint.postgres import PostgresSaver
 
 from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage, AIMessage
+from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 
-from mcp_client import tavily_mcp_search, aviation_mcp_call, extract_destination, forecast_mcp_search, weather_mcp_search
+from mcp_client import tavily_mcp_search, aviation_mcp_call, forecast_mcp_search, weather_mcp_search
 
 def get_database_url():
     database_url = os.getenv("DATABASE_URL")
@@ -37,14 +39,16 @@ def get_database_url():
 
     return database_url
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-if not GROQ_API_KEY:
-    raise ValueError("GROQ_API_KEY is missing. Please add your Groq API key in your .env file")
-
 # ===========================================================================
 # LLM
-llm = ChatGroq(model = "llama-3.3-70b-versatile", api_key = GROQ_API_KEY) # type: ignore
+llm = ChatGroq(model = "openai/gpt-oss-120b", api_key = os.getenv("GROQ_API_KEY"))
 
+llm_qwen = ChatOpenAI(
+    api_key=os.getenv("ALIYUN_API_KEY"),
+    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    model_name="qwen3.8-max",
+    temperature=0.2
+)
 # ===========================================================================
 # State
 class TravelState(TypedDict):
@@ -105,6 +109,15 @@ def _llm_text(system_prompt: str, user_prompt: str) -> str:
     )
     return str(response.content)
 
+def _llm_qwen_text(system_prompt: str, user_prompt: str) -> str:
+    response = llm_qwen.invoke(
+        [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_prompt),
+        ]
+    )
+    return str(response.content)
+
 # json 格式在agent之间传递比较方便
 def _json_from_llm(text: str) -> dict[str, Any]:
     """Extract the first complete JSON object returned by the model."""
@@ -127,6 +140,17 @@ def _empty_constraints() -> dict[str, Any]:
         "special_preferences": [],
     }
 
+async def get_airport_iata(city_or_country: str, limit: int = 5):
+    """把城市/国家转换成机场 IATA 代码列表"""
+    result = await aviation_mcp_call(
+        "list_airports",
+        {
+            "search": city_or_country,
+            "limit": limit
+        }
+    )
+    return result
+
 # =========================
 # Supervisor Agent + Input Guardrail
 # =========================
@@ -135,28 +159,27 @@ def supervisor_agent(state: TravelState):
     llm_calls = state.get("llm_calls", 0)
 
     guardrail_prompt = f"""
-判断以下请求是否属于旅行计划或旅行
-信息。有效请求可以包括目的地、航班、酒店、天气、
-预算、签证、交通、观光、食物、包装或行程。
+Determine whether the following request belongs to travel planning or travel
+information. Valid requests can include destinations, flights, hotels, weather,
+budgets, visas, transportation, sightseeing, food, packing, or itineraries.
 
-阻止明显不相关的请求以及要求有害或非法的请求
-说明。不要仅仅因为某些细节而阻止有效的旅行请求
-失踪了。
+Block clearly unrelated requests and requests asking for harmful or illegal
+instructions. Do not block a valid travel request merely because some details
+are missing.
 
-仅返回严格的 JSON：
+Return strict JSON only:
 {{
   "allowed": true,
   "reason": ""
 }}
 
-用户请求：
+User request:
 {query}
 """
-
     # Guardrail 在检查用户请求时发生了任何异常（比如模型调用失败、网络超时、解析错误、代码 bug 等），不要把请求拦住，而是放行（allowed = True），并记录原因是“兜底放行”。不会因为 Guardrail 服务临时出问题，导致整个系统不可用
     try:
         guardrail_raw = _llm_text(
-            "你是旅行规划应用程序的输入审核人员，负责核实输入数据的准确性。 "
+            "You are the input guardrail for a travel-planning application."
             "Return strict JSON only.",
             guardrail_prompt,
         )
@@ -188,7 +211,7 @@ def supervisor_agent(state: TravelState):
 
     supervisor_prompt = f"""
 You are the supervisor of a multi-agent travel-planning system.
-Choose only the specialist agents needed for the request.
+Choose only the specialist agents needed for the user_request, and do not include the unnecessary agents.
 
 Available agents:
 - flight_agent: flights, airports, airlines, routes, airfare, or booking advice
@@ -275,79 +298,252 @@ def guardrail_blocked_agent(state: TravelState):
 # =========================
 # Flight Agent - original behavior kept
 # =========================
-FLIGHT_AGENT_PROMPT = """
-You are a travel flight expert.
-
-User Query:
-{query}
-
-Airport Information:
-{airport_data}
-
-Airline Information:
-{airline_data}
-
-Generate:
-1. Likely departure airport
-2. Likely arrival airport
-3. Airlines serving this route
-4. Typical flight duration
-5. Estimated airfare range
-6. Peak season pricing warning
-7. Booking advice
-
-Return concise travel guidance.
-"""
-# Flight Agent
 def flight_agent(state: TravelState):
+
     print("\nINSIDE FLIGHT AGENT\n")
 
     query = state["user_query"]
 
+    constraints = state.get(
+        "trip_constraints",
+        {}
+    )
+
+    origin = (
+        constraints.get("origin", "")
+        or "北京"
+    )
+
+    destination = (
+        constraints.get("destination", "")
+        or "东京"
+    )
+
+    print(f"origin: {origin}")
+    print(f"destination: {destination}")
+
     try:
-        airports = asyncio.run(aviation_mcp_call("list_airports"))
 
-        airlines = asyncio.run(aviation_mcp_call("list_airlines"))
+        # ==========================================
+        # 1. Flight Search
+        # ==========================================
 
-        print("\n\nairports:", airports)
-        print("\n\nairlines:", airlines)
-
-        prompt = FLIGHT_AGENT_PROMPT.format(
-            query=query,
-            airport_data=str(airports)[:3000],
-            airline_data=str(airlines)[:3000]
+        flight_query = (
+            f"{origin} {destination} "
+            f"direct flights airlines "
+            f"flight duration airfare"
         )
 
-        response = llm.invoke([
-            SystemMessage(content="You are a travel flight expert."),
-            HumanMessage(content=prompt)
-        ])
+        print("\nFLIGHT SEARCH QUERY:")
+        print(flight_query)
 
-        flight_data = response.content
-    except Exception as e:
-        flight_data = f"Flight information not found. Error: {str(e)}" 
+        search_result = asyncio.run(
+            tavily_mcp_search(
+                flight_query,
+                max_results=5
+            )
+        )
+
+        # ==========================================
+        # 2. 清洗
+        # ==========================================
+
+        flight_results = clean_tavily_results(
+            search_result
+        )
+
+        print("\nFLIGHT SEARCH RESULT:")
+        print(flight_results)
+
+    except Exception as exc:
+
+        print(
+            f"FLIGHT AGENT MCP ERROR: "
+            f"{type(exc).__name__}: {exc}",
+            flush=True,
+        )
+
+        flight_results = []
 
     return {
-        "flight_results": flight_data,
+        "flight_results": flight_results,
+
         "messages": [
-                AIMessage(content="Flight recommendations fetched.")
-            ],
-        "llm_calls": state.get("llm_calls", 0) + 1,
+            AIMessage(
+                content="Flight information fetched."
+            )
+        ],
+
+        # 没调用 LLM
+        "llm_calls": state.get(
+            "llm_calls",
+            0
+        ),
     }
+
+def clean_tavily_results(result, max_results=5):
+    """
+    解析 Tavily MCP 返回结果，并提取有效搜索结果。
+    """
+
+    if not result:
+        return []
+
+    # ==========================================
+    # 1. MCP 返回通常是：
+    #
+    # [
+    #     {
+    #         "type": "text",
+    #         "text": "JSON字符串"
+    #     }
+    # ]
+    # ==========================================
+
+    if isinstance(result, list):
+
+        # 找到 text
+        text = None
+
+        for item in result:
+            if isinstance(item, dict):
+                if item.get("type") == "text":
+                    text = item.get("text")
+                    break
+
+        if text is None:
+            return []
+
+        # JSON 字符串 → dict
+        if isinstance(text, str):
+
+            try:
+                result = json.loads(text)
+
+            except json.JSONDecodeError:
+                return []
+
+    # ==========================================
+    # 2. 提取 Tavily results
+    # ==========================================
+
+    if isinstance(result, dict):
+
+        results = result.get("results", [])
+
+    else:
+        return []
+
+    if not isinstance(results, list):
+        return []
+
+    # ==========================================
+    # 3. 清洗
+    # ==========================================
+
+    cleaned = []
+
+    for item in results:
+
+        if not isinstance(item, dict):
+            continue
+
+        title = item.get("title", "")
+        content = item.get("content", "")
+        score = item.get("score", 0)
+
+        # 没有正文直接跳过
+        if not content:
+            continue
+
+        cleaned.append({
+            "title": title,
+            "content": content[:800],
+            "score": score,
+        })
+
+    # ==========================================
+    # 4. 按 Tavily score 排序
+    # ==========================================
+
+    cleaned.sort(
+        key=lambda x: x.get("score", 0),
+        reverse=True
+    )
+
+    return cleaned[:max_results]
 
 # =========================
 # Hotel Agent - original behavior kept
 # =========================
+
 def hotel_agent(state: TravelState):
+    print("\nINSIDE HOTEL AGENT\n")
+
     query = (
-        f"Best hotels for "
-        f"{state['user_query']}"
+        f"{state['user_query']} "
+        "Japan hotels best areas hotel prices"
     )
 
+    print("\nHOTEL SEARCH QUERY:")
+    print(query)
+
     try:
-        hotel_results = asyncio.run(
+        raw_result = asyncio.run(
             tavily_mcp_search(query)
         )
+
+        print("\nHOTEL RAW RESULT:")
+        print(raw_result)
+
+        # 1. MCP 返回 list
+        if not isinstance(raw_result, list):
+            hotel_results = []
+        else:
+            hotel_results = []
+
+            # 2. 找到 MCP 的 text 内容
+            for item in raw_result:
+                if not isinstance(item, dict):
+                    continue
+
+                text = item.get("text")
+
+                if not text:
+                    continue
+
+                # 3. text 本身是 JSON 字符串
+                try:
+                    data = json.loads(text)
+                except json.JSONDecodeError:
+                    continue
+
+                # 4. 获取 Tavily results
+                results = data.get("results", [])
+
+                if not isinstance(results, list):
+                    continue
+
+                # 5. 提取真正需要的数据
+                for result in results:
+                    if not isinstance(result, dict):
+                        continue
+
+                    title = result.get("title", "")
+                    url = result.get("url", "")
+                    content = result.get("content", "")
+
+                    if not content:
+                        continue
+
+                    hotel_results.append({
+                        "title": title,
+                        "url": url,
+                        "content": content,
+                    })
+
+        print("\nHOTEL SEARCH RESULT:")
+        print(hotel_results)
 
     except Exception as exc:
         print(
@@ -356,12 +552,7 @@ def hotel_agent(state: TravelState):
             flush=True,
         )
 
-        hotel_results = (
-            "Live hotel search is temporarily unavailable. "
-            "Provide general accommodation and neighborhood "
-            "guidance based on the destination and clearly "
-            "label it as non-live advice."
-        )
+        hotel_results = []
 
     return {
         "hotel_results": hotel_results,
@@ -370,9 +561,8 @@ def hotel_agent(state: TravelState):
                 content="Hotel information processed."
             )
         ],
-        "llm_calls": (
-            state.get("llm_calls", 0) + 1
-        ),
+        # 酒店 Agent 没有调用 LLM
+        "llm_calls": state.get("llm_calls", 0),
     }
 
 
@@ -380,9 +570,9 @@ def hotel_agent(state: TravelState):
 # Weather Agent - original behavior kept
 # =========================
 def weather_agent(state: TravelState):
-    city = extract_destination(
-        state["user_query"]
-    )
+    constraint = state["trip_constraints"]
+    city = constraint["destination"]
+    print(f"\n\nCity: {city}\n\n")
 
     try:
         weather_data = asyncio.run(
@@ -400,6 +590,9 @@ Current Weather:
 Forecast:
 {forecast_data}
 """
+
+        print("\nWEATHER AGENT RESULT:")
+        print(weather_results[:200])
 
     except Exception as exc:
         print(
@@ -429,6 +622,9 @@ Forecast:
 # Budget Agent - new specialist
 # =========================
 def budget_agent(state: TravelState):
+ 
+    t0 = time.perf_counter()
+
     prompt = f"""
 Analyze whether this trip is realistic for the user's budget.
 
@@ -455,12 +651,21 @@ Return:
 
 If exact live prices are unavailable, clearly label estimates as approximate.
 """
+    t1 = time.perf_counter()
 
-    response = llm.invoke(
+    response = llm_qwen.invoke(
         [
             SystemMessage(content="You are a practical travel budget analyst."),
             HumanMessage(content=prompt),
         ]
+    )
+
+    t2 = time.perf_counter()
+
+    print(
+        f"[BUDGET] prompt_build={t1-t0:.2f}s "
+        f"llm={t2-t1:.2f}s "
+        f"total={t2-t0:.2f}s"
     )
 
     return {
@@ -474,6 +679,9 @@ If exact live prices are unavailable, clearly label estimates as approximate.
 # Itinerary Agent - original behavior extended with selected results
 # =========================
 def itinerary_agent(state: TravelState):
+
+    t0 = time.perf_counter()
+
     prompt = f"""
 Create a complete travel itinerary.
 
@@ -499,17 +707,30 @@ Make the itinerary practical, budget-aware, and easy to follow.
 Create a clear draft that is ready for human review.
 """
 
-    response = llm.invoke(
+    t1 = time.perf_counter()
+
+    response = llm_qwen.invoke(
         [
             SystemMessage(content="You are an expert travel planner."),
             HumanMessage(content=prompt),
         ]
     )
 
+    t2 = time.perf_counter()
+
+    print(
+        f"[ITINERARY] prompt_build={t1-t0:.2f}s "
+        f"llm={t2-t1:.2f}s "
+        f"total={t2-t0:.2f}s"
+    )
+
     approval_request = (
         "Please review the generated draft itinerary. Approve it to create the "
         "final polished plan, or provide feedback for revision."
     )
+
+    print("\n\nITINERARY AGENT RESULT:\n\n")
+    print(response.content[:200])
 
     return {
         "itinerary": response.content,
@@ -563,6 +784,8 @@ The user requested a revision. Apply this feedback carefully:
 """
 
     final_prompt = f"""
+重要：请使用与用户请求相同的语言来回答。
+如果用户用中文提问，就全部用中文回复；如果用英文提问，就用英文回复。    
 Generate the final travel response for the user.
 
 Human Review:
@@ -734,10 +957,12 @@ _conn = psycopg.connect(
     DATABASE_URL, 
     autocommit=True,
     row_factory=dict_row, # type: ignore
+    prepare_threshold=0,
     )
 
 checkpointer = PostgresSaver(_conn) # type: ignore
 checkpointer.setup()
+print("连接数据库成功")
 
 travel_graph = graph.compile(checkpointer)
 

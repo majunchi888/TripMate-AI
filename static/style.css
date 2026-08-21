@@ -149,7 +149,10 @@ body {
 }
 
 .planner-card,
-.result-section {
+.result-section,
+.processing-card,
+.plan-panel,
+.approval-card {
   background: rgba(15, 23, 42, 0.76);
   border: 1px solid rgba(148, 163, 184, 0.26);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
@@ -282,6 +285,342 @@ textarea::placeholder {
   border-color: rgba(96, 165, 250, 0.5);
 }
 
+/* ============================================================
+   Processing status
+   ============================================================ */
+.processing-card {
+  margin-top: 26px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 20px;
+}
+
+.processing-card span {
+  color: #93c5fd;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* ============================================================
+   Supervisor Plan Panel
+   ============================================================ */
+.plan-panel {
+  margin-top: 26px;
+  padding: 24px;
+}
+
+.plan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.plan-header h2 {
+  font-size: 1.15rem;
+}
+
+.plan-header p {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.guardrail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.guardrail-badge.ok {
+  background: rgba(34, 197, 94, 0.12);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.guardrail-badge.blocked {
+  background: rgba(239, 68, 68, 0.14);
+  color: #fecaca;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.plan-section-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #64748b;
+  font-weight: 800;
+  margin: 16px 0 8px;
+}
+
+.agents-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.agent-chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid;
+  transition: transform 0.2s ease;
+}
+
+.agent-chip:hover {
+  transform: translateY(-2px);
+}
+
+.agent-chip[data-agent="flight_agent"] {
+  background: rgba(56, 189, 248, 0.12);
+  color: #7dd3fc;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.agent-chip[data-agent="hotel_agent"] {
+  background: rgba(167, 139, 250, 0.12);
+  color: #c4b5fd;
+  border-color: rgba(167, 139, 250, 0.35);
+}
+
+.agent-chip[data-agent="weather_agent"] {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fcd34d;
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+.agent-chip[data-agent="budget_agent"] {
+  background: rgba(52, 211, 153, 0.12);
+  color: #6ee7b7;
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.agent-chip[data-agent="itinerary_agent"] {
+  background: rgba(251, 113, 133, 0.12);
+  color: #fda4af;
+  border-color: rgba(251, 113, 133, 0.35);
+}
+
+.agents-empty,
+.constraints-empty {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.constraints-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.constraint-tile {
+  background: rgba(2, 6, 23, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.constraint-tile .ct-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 5px;
+}
+
+.constraint-tile .ct-value {
+  font-size: 0.95rem;
+  color: #e2e8f0;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.supervisor-note {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: #c4b5fd;
+  line-height: 1.6;
+  border-left: 3px solid #7c3aed;
+  background: rgba(124, 58, 237, 0.1);
+  padding: 10px 14px;
+  border-radius: 0 12px 12px 0;
+}
+
+.supervisor-note:empty {
+  display: none;
+}
+
+/* ============================================================
+   Guardrail Blocked Card
+   ============================================================ */
+.blocked-card {
+  margin-top: 26px;
+  padding: 26px;
+  border-radius: 24px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  backdrop-filter: blur(20px);
+}
+
+.blocked-card h2 {
+  color: #fecaca;
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+
+.blocked-reason {
+  background: rgba(2, 6, 23, 0.5);
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: #fecaca;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.blocked-hint {
+  margin-top: 14px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Human-in-the-Loop Approval Card
+   ============================================================ */
+.approval-card {
+  margin-top: 26px;
+  padding: 26px;
+  border: 1px solid rgba(245, 158, 11, 0.42);
+  box-shadow: 0 24px 80px rgba(245, 158, 11, 0.14);
+}
+
+.approval-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.approval-icon {
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.approval-header h2 {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+
+.approval-header p {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.approval-badge {
+  margin-left: auto;
+  flex: none;
+  background: rgba(245, 158, 11, 0.14);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.approval-draft {
+  background: #ffffff;
+  color: #1f2937;
+  border-radius: 18px;
+  padding: 20px;
+  margin-top: 16px;
+  max-height: 78vh;
+  min-height: 420px;
+  overflow-y: auto;
+  white-space: normal;
+}
+
+.feedback-input {
+  margin-top: 14px;
+  min-height: 92px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: rgba(2, 6, 23, 0.6);
+}
+
+.feedback-input:focus {
+  border-color: rgba(245, 158, 11, 0.65);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.16);
+}
+
+.approval-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+  justify-content: flex-end;
+}
+
+.btn-revise,
+.btn-approve {
+  border-radius: 14px;
+  padding: 12px 22px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.btn-revise {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #e2e8f0;
+}
+
+.btn-revise:hover {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fcd34d;
+}
+
+.btn-approve {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  border: none;
+  color: #ffffff;
+  box-shadow: 0 12px 30px rgba(34, 197, 94, 0.28);
+}
+
+.btn-approve:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px rgba(34, 197, 94, 0.4);
+}
+
+.btn-revise:disabled,
+.btn-approve:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================================
+   Result Section
+   ============================================================ */
 .result-section {
   margin-top: 26px;
   padding: 28px;
@@ -291,6 +630,40 @@ textarea::placeholder {
   display: flex;
   gap: 10px;
   align-items: center;
+}
+
+.result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.result-meta .thread,
+.stat-item {
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.result-badge {
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.result-badge.approved {
+  background: rgba(34, 197, 94, 0.14);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.result-badge.revised {
+  background: rgba(245, 158, 11, 0.14);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.4);
 }
 
 .copy-btn,
@@ -338,18 +711,20 @@ textarea::placeholder {
   margin-bottom: 20px;
 }
 
-.result-box {
-  background: #ffffff;
+/* ============================================================
+   Shared Markdown body (result box + approval draft)
+   ============================================================ */
+.result-box,
+.approval-draft {
   color: #1f2937;
-  border: none;
-  padding: 0;
-  white-space: normal;
-  overflow-x: auto;
 }
 
 .result-box h1,
 .result-box h2,
-.result-box h3 {
+.result-box h3,
+.approval-draft h1,
+.approval-draft h2,
+.approval-draft h3 {
   color: #0f172a;
   margin-top: 26px;
   margin-bottom: 12px;
@@ -359,17 +734,22 @@ textarea::placeholder {
 
 .result-box h1:first-child,
 .result-box h2:first-child,
-.result-box h3:first-child {
+.result-box h3:first-child,
+.approval-draft h1:first-child,
+.approval-draft h2:first-child,
+.approval-draft h3:first-child {
   margin-top: 0;
 }
 
-.result-box h1 {
+.result-box h1,
+.approval-draft h1 {
   font-size: 2rem;
   border-bottom: 3px solid #2563eb;
   padding-bottom: 10px;
 }
 
-.result-box h2 {
+.result-box h2,
+.approval-draft h2 {
   font-size: 1.45rem;
   border-left: 5px solid #2563eb;
   padding-left: 12px;
@@ -379,40 +759,48 @@ textarea::placeholder {
   border-radius: 10px;
 }
 
-.result-box h3 {
+.result-box h3,
+.approval-draft h3 {
   font-size: 1.15rem;
   color: #1d4ed8;
 }
 
-.result-box p {
+.result-box p,
+.approval-draft p {
   margin-bottom: 14px;
   line-height: 1.75;
   color: #374151;
 }
 
 .result-box ul,
-.result-box ol {
+.result-box ol,
+.approval-draft ul,
+.approval-draft ol {
   margin: 10px 0 18px 24px;
   color: #374151;
 }
 
-.result-box li {
+.result-box li,
+.approval-draft li {
   margin-bottom: 8px;
   line-height: 1.65;
 }
 
-.result-box strong {
+.result-box strong,
+.approval-draft strong {
   color: #111827;
   font-weight: 800;
 }
 
-.result-box hr {
+.result-box hr,
+.approval-draft hr {
   border: none;
   border-top: 1px solid #e5e7eb;
   margin: 24px 0;
 }
 
-.result-box table {
+.result-box table,
+.approval-draft table {
   width: 100%;
   border-collapse: collapse;
   margin: 18px 0;
@@ -420,18 +808,24 @@ textarea::placeholder {
 }
 
 .result-box th,
-.result-box td {
+.result-box td,
+.approval-draft th,
+.approval-draft td {
   border: 1px solid #e5e7eb;
   padding: 10px;
   text-align: left;
 }
 
-.result-box th {
+.result-box th,
+.approval-draft th {
   background: #eff6ff;
   color: #111827;
   font-weight: 800;
 }
 
+/* ============================================================
+   Error / loader / misc
+   ============================================================ */
 .error-box {
   margin-top: 22px;
   padding: 18px 20px;
@@ -450,6 +844,11 @@ textarea::placeholder {
   border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.85s linear infinite;
+}
+
+.loader-dark {
+  border: 3px solid rgba(148, 163, 184, 0.35);
+  border-top-color: #94a3b8;
 }
 
 .hidden {
@@ -478,7 +877,12 @@ footer {
   .hero-section,
   footer,
   .result-actions,
-  #threadInfo {
+  #threadInfo,
+  .result-meta,
+  .processing-card,
+  .plan-panel,
+  .approval-card,
+  .blocked-card {
     display: none;
   }
 
@@ -509,13 +913,16 @@ footer {
   }
 
   .planner-card,
-  .result-section {
+  .result-section,
+  .plan-panel,
+  .approval-card {
     padding: 20px;
     border-radius: 22px;
   }
 
   .card-header,
-  .result-header {
+  .result-header,
+  .plan-header {
     flex-direction: column;
   }
 
@@ -542,5 +949,23 @@ footer {
 
   .pdf-content {
     padding: 20px;
+  }
+
+  .approval-actions {
+    flex-direction: column-reverse;
+  }
+
+  .btn-revise,
+  .btn-approve {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .approval-header {
+    flex-wrap: wrap;
+  }
+
+  .approval-badge {
+    margin-left: 0;
   }
 }
